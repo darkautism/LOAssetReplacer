@@ -6,7 +6,7 @@ This project is a LastOrigin asset replace mod. It can replace game asset.
 
 Because Lastorigin jp (DMM) modified in-game pictures. Although he is to comply with Japanese regulations, we still want him to keep the most pristine asset.
 
-An HongRyeon(¬õ½¬) example:
+An HongRyeon(Â¬ÃµÂ½Â¬) example:
 
 ```
 DMM JP version:
@@ -17,7 +17,7 @@ https://cdn.discordapp.com/attachments/729585197326139413/979295512895295508/unk
 
 ## Install guide
 
-1. Install [BepInEx6](https://github.com/BepInEx/BepInEx/releases)
+1. Install [BepInEx6](https://github.com/BepInEx/BepInEx/releases) BepInEx_UnityIL2CPP_x64_6.0.0-pre.1.zip
 2. Run Game Once. This steup will hang a minute. If you watching the Game UI, you will found `BepInEx\plugins` dir is generate. Then close the game.
 3. Place `LOAssetReplacer.dll` into `BepInEx\plugins`
 4. Create `mod` dir in your game root dir.
