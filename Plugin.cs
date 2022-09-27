@@ -23,7 +23,7 @@ namespace LOAssetReplacer{
     }
 
     [HarmonyPatch(typeof(DownloadHandlerAssetBundle), nameof(DownloadHandlerAssetBundle.GetContent))]
-    public static class ResourceSwapper
+    public static class AssetReplacer
     {
         static bool Prefix(ref AssetBundle __result, UnityWebRequest www, DownloadHandlerAssetBundle __instance)
         {
