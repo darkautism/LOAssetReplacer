@@ -17,9 +17,8 @@ https://cdn.discordapp.com/attachments/729585197326139413/979295512895295508/unk
 
 ## Install guide
 
-1. Install [BepInEx6](https://github.com/BepInEx/BepInEx/releases) BepInEx_UnityIL2CPP_x64_6.0.0-pre.1.zip
-2. Run Game Once. This steup will hang a minute. If you watching the Game UI, you will found `BepInEx\plugins` dir is generate. Then close the game.
-3. Place `LOAssetReplacer.dll` into `BepInEx\plugins`
-4. Create `mod` dir in your game root dir.
-5. Place your asset mod into mod dir.(You can get these asset from LastOrigin kr version unity download cache).
+Extract all of file into your game dir.
 
+## Mode usage guide
+
+place your mod into LOAssetReplacer dir.
