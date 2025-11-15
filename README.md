@@ -19,6 +19,10 @@ https://cdn.discordapp.com/attachments/729585197326139413/979295512895295508/unk
 
 Extract all of file into your game dir.
 
+## Which version LastOrigin has been suppored?
+
+JP/TW PC
+
 ## Mode usage guide
 
 place your mod into LOAssetReplacer dir.
