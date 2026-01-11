@@ -32,6 +32,10 @@ namespace LOAssetReplacer
         public static readonly Dictionary<string, string> s_bundlePaths =
             new Dictionary<string, string>();
 
+        // 快取字典：存 AssetBundle 實體
+        public static readonly Dictionary<string, AssetBundle> s_bundleCache = 
+            new Dictionary<string, AssetBundle>();
+
         public override void OnInitializeMelon()
         {
             ScanModFolders();
@@ -67,35 +71,61 @@ namespace LOAssetReplacer
         }
 
 
-        [HarmonyPatch(
-            typeof(DownloadHandlerAssetBundle),
-            nameof(DownloadHandlerAssetBundle.GetContent)
-        )]
+        [HarmonyPatch(typeof(DownloadHandlerAssetBundle), nameof(DownloadHandlerAssetBundle.GetContent))]
         public class AssetReplacer
         {
             [HarmonyPrefix]
-            internal static bool Prefix(
-                ref AssetBundle __result,
-                UnityWebRequest www,
-                DownloadHandlerAssetBundle __instance
-            )
+            internal static bool Prefix(ref AssetBundle __result, UnityWebRequest www)
             {
-                string assetBundleName = System.IO.Path.GetFileName(www.GetUrl());
-                    if (s_req.ContainsKey(assetBundleName) ) {
-                        DownloadHandler
-                            .GetCheckedDownloader<DownloadHandlerAssetBundle>(www)
-                            .assetBundle.Unload(true);
-                        // 同步等待完成
-                        while (!s_req[assetBundleName].op.isDone) ;
+                string assetBundleName = System.IO.Path.GetFileName(www.url);
 
-                        AssetBundle ab = DownloadHandlerAssetBundle.GetContent(s_req[assetBundleName].req);
-                        __result = ab;
-
-                    MelonLogger.Msg($"Load from mod: {assetBundleName}");
-                    return false;
+                // --- 第一階段：從 AB 快取拿 (避免重複處理) ---
+                if (s_bundleCache.TryGetValue(assetBundleName, out AssetBundle cachedAb) && cachedAb != null)
+                {
+                    __result = cachedAb;
+                    return false; // 攔截成功
                 }
-                    
-                
+
+                // --- 第二階段：從預載入字典 s_req 拿 ---
+                if (s_req.TryGetValue(assetBundleName, out Req reqData))
+                {
+                    try
+                    {
+                        // 同步等待預載入完成
+                        while (!reqData.op.isDone) { /* IL2CPP 安全等待 */ }
+
+                        if (reqData.req.result == UnityWebRequest.Result.Success)
+                        {
+                            AssetBundle newAb = DownloadHandlerAssetBundle.GetContent(reqData.req);
+                            if (newAb != null)
+                            {
+                                // 存入永久快取，下次直接走第一階段
+                                s_bundleCache[assetBundleName] = newAb;
+                                __result = newAb;
+                                MelonLogger.Msg($"[Mod] From s_req to Cache: {assetBundleName}");
+                            }
+                        }
+                        else
+                        {
+                            MelonLogger.Error($"[Mod] Preload failed: {reqData.req.error}");
+                            return true; // 預載失敗，退回原生邏輯
+                        }
+                    }
+                    finally
+                    {
+                        //從 s_req 拿完資料後，一定要 Dispose 並移除，釋放 Native 記憶體
+                        if (reqData.req != null)
+                        {
+                            reqData.req.Dispose();
+                        }
+                        s_req.Remove(assetBundleName);
+                        MelonLogger.Msg($"[Mod] Disposed s_req: {assetBundleName}");
+                    }
+
+                    return false; // 攔截成功
+                }
+
+                // --- 第三階段：直接用原生 ---
                 return true;
             }
         }
